@@ -11,9 +11,9 @@ class Util {
 
     public static final double G = 6.67259E-11 ;  // in m3/s2/kg    as per jpl planetary satellites page
 
-    public void calculateForceBetweenParticles(Map.Entry<Particle,Particle> entry) {
-        Particle p1 = entry.key
-        Particle p2 = entry.value
+    public void calculateForceBetweenParticles(Tuple2<Particle,Particle> particlePair) {
+        Particle p1 = particlePair.first
+        Particle p2 = particlePair.second
 
         Vector3d distVect = new Vector3d();
         distVect.sub(p1.location, p2.location);    // pos - withObject.pos
@@ -26,22 +26,25 @@ class Util {
         p1.addForce(nowForce);
 
         nowForce.negate();
-        p2.addToForce(nowForce);
+        p2.addForce(nowForce);
     }
 
     public void updateLocationAndVelocity(List<Particle> allParticles,
                                           double deltaT) {
-        allParticles.each{it.updateVelocityAndPosition(deltaT)}
+        // Can be run in parallel
+        allParticles.each{
+            it.updateVelocityAndPosition(deltaT)
+        }
     }
 
-    public Map<Particle,Particle> createPairOfParticles(List<Particle> allParticles){
+    public List<Tuple2<Particle,Particle>> createPairOfParticles(List<Particle> allParticles){
         int noParticles = allParticles.size();
-        Map<Particle,Particle> pairOfParticles = new HashMap()
+        def pairOfParticles = new ArrayList<Tuple2<Particle,Particle>>()
         for (int i =0;i<noParticles;i++) {
-            Particle key = allParticles[i]
+            Particle p1 = allParticles[i]
             for (int j = i+1;j<noParticles;j++) {
-                Particle value = allParticles[j]
-                pairOfParticles.put(key,value)
+                Particle p2 = allParticles[j]
+                pairOfParticles.add(new Tuple2<Particle, Particle>(p1,p2))
             }
         }
         return pairOfParticles.asImmutable()

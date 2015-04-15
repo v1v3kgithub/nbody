@@ -27,9 +27,7 @@ class Particle {
     }
 
     Particle(String id,double mass, Point3d location) {
-        this.location = location
-        this.mass = mass
-        this.id = id
+        this(id,mass,location,new Vector3d())
     }
 
     public synchronized void addForce(Vector3d forceToAdd) {
