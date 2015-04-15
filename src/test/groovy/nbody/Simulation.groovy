@@ -67,7 +67,7 @@ void performace(AbstractComputationEngine serialComputationEngine,
     minNumberOfParticles.step(maxNumberOfParticles,numberOfParticleIncrementSize) {
         int numberOfParticles = it
         List<Particle> particles = createRandomParticles(it)
-        (minNumberOfIterrations..maxNumerOfIterrations).each {
+        minNumberOfIterrations.step(maxNumerOfIterrations,numberIterationsIncrementSize) {
             int numberOfIterations = it
             double serialTime = computeTime(serialComputationEngine,deltaT,numberOfIterations,particles)
             double parallelTime = computeTime(parallelComputationEngine,deltaT,numberOfIterations,particles)
@@ -76,7 +76,7 @@ void performace(AbstractComputationEngine serialComputationEngine,
     }
 }
 
-performace(serialComputationEngine,parallelComputationEngine,1000,1010,50,100,100,10,0.1)
+performace(serialComputationEngine,parallelComputationEngine,200,1000,50,100,101,10,0.1)
 
 parallelComputationEngine.executorService.shutdown()
 
