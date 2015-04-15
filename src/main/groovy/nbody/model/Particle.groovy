@@ -51,6 +51,33 @@ class Particle {
         force.set(0,0,0)
     }
 
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        Particle particle = (Particle) o
+
+        if (Double.compare(particle.mass, mass) != 0) return false
+        if (force != particle.force) return false
+        if (id != particle.id) return false
+        if (location != particle.location) return false
+        if (velocity != particle.velocity) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        long temp
+        result = id.hashCode()
+        temp = mass != +0.0d ? Double.doubleToLongBits(mass) : 0L
+        result = 31 * result + (int) (temp ^ (temp >>> 32))
+        result = 31 * result + location.hashCode()
+        result = 31 * result + velocity.hashCode()
+        result = 31 * result + force.hashCode()
+        return result
+    }
+
     @Override
     public String toString() {
         return "Particle{" +
