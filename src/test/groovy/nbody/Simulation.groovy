@@ -67,7 +67,7 @@ void performace(AbstractComputationEngine serialComputationEngine,
     println "Min Number of Particles $minNumberOfParticles"
     println "Max Number of Particles $maxNumberOfParticles"
     println "Min Number of Iterations $minNumberOfIterrations"
-    println "Max Number of Iterations $maxNumerOfIterrations"
+    println "Max Number of Iterations $maxNumerOfIterrations\n\n"
     println "NumberOfParticles,NumberOfIteratioons,SerialComputeTime(ms),ParellemComputeTime(ms),%Improvement"
     minNumberOfParticles.step(maxNumberOfParticles,numberOfParticleIncrementSize) {
         int numberOfParticles = it
@@ -80,7 +80,7 @@ void performace(AbstractComputationEngine serialComputationEngine,
         }
     }
 }
-println "Mutiple calculation runs....\n\n"
+println "\n\nMutiple calculation runs....\n"
 performace(serialComputationEngine,parallelComputationEngine,200,1000,50,100,101,10,0.1)
 
 parallelComputationEngine.executorService.shutdown()
