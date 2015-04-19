@@ -7,8 +7,6 @@ import nbody.evaluation.Util
 import nbody.model.Particle
 
 import javax.vecmath.Point3d
-import java.util.Random
-import javax.vecmath.Vector3d
 
 /**
  * Created by v2 on 13/04/15.
@@ -31,22 +29,10 @@ List<Particle> createRandomParticles(numberofParticles) {
 
 Util util = new Util()
 SerialComputationEngine serialComputationEngine =
-        new SerialComputationEngine(util.&createPairOfParticles,
-                util.&calculateForceBetweenParticles,util.&updateLocationAndVelocity);
+        new SerialComputationEngine(util);
 ParallelComputationEngine parallelComputationEngine =
-        new ParallelComputationEngine(util.&createPairOfParticles,
-                util.&calculateForceBetweenParticles,
-                util.&updateLocationAndVelocity)
+        new ParallelComputationEngine(util)
 
-/*
-def particles = createRandomParticles(100)
-println particles[1]
-serialComputationEngine.compute(particles,0.1,1000)
-println particles[1]
-
-parallelComputationEngine.compute(particles,0.1,1000)
-println particles[1]
-*/
 
 double computeTime(AbstractComputationEngine computationEngine,double deltaT,int numberOfIterations,List<Particle> particles) {
     double start= System.currentTimeMillis()
@@ -68,7 +54,7 @@ void performace(AbstractComputationEngine serialComputationEngine,
     println "Max Number of Particles $maxNumberOfParticles"
     println "Min Number of Iterations $minNumberOfIterrations"
     println "Max Number of Iterations $maxNumerOfIterrations\n\n"
-    println "NumberOfParticles,NumberOfIteratioons,SerialComputeTime(ms),ParellemComputeTime(ms),%Improvement"
+    println "NumberOfParticles,NumberOfIterations,SerialComputeTime(ms),ParallelComputeTime(ms),%Improvement"
     minNumberOfParticles.step(maxNumberOfParticles,numberOfParticleIncrementSize) {
         int numberOfParticles = it
         List<Particle> particles = createRandomParticles(it)

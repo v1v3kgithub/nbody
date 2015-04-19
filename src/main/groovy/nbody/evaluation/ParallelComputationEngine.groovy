@@ -14,47 +14,63 @@ class ParallelComputationEngine extends AbstractComputationEngine {
     final ExecutorService executorService
     private final int numberOfCPUs = Runtime.runtime.availableProcessors()
 
-    ParallelComputationEngine(Closure createCombinationOfParticles,
-                              Closure actionToPerformBetweenParticles,
-                              Closure actionToPerformAfterAllIntraParticleEvaluation) {
-        super(createCombinationOfParticles,actionToPerformBetweenParticles,actionToPerformAfterAllIntraParticleEvaluation)
+    ParallelComputationEngine(Util util) {
+        super(util)
         this.executorService = Executors.newFixedThreadPool(numberOfCPUs)
     }
 
     public compute(List<Particle> allParticles, final double deltaT, int numberOfCalculationIterations) {
 
-        List<Tuple2<Particle,Particle>> particlePairs = createCombinationOfParticles.call(allParticles)
+        List<Tuple2<Particle, Particle>> particlePairs = util.createPairOfParticles(allParticles)
 
         int particlesPerCpu = Math.ceil(particlePairs.size() / numberOfCPUs) // Allowing for overflow
         if (particlesPerCpu < 5) {
             throw new IllegalStateException("Please use serial compute engine very less number of particles")
         }
-        List<List<Tuple2<Particle,Particle>>> subListOfParticlePairs =
-                    particlePairs.collate(particlesPerCpu)
+        List<List<Tuple2<Particle, Particle>>> subListOfParticlePairs =
+                particlePairs.collate(particlesPerCpu)
 
 
         CountDownLatch numberOfIterationsCounterLatch = new CountDownLatch(numberOfCalculationIterations)
-        final CyclicBarrier barrier  = new CyclicBarrier(
+        final CyclicBarrier barrier = new CyclicBarrier(
                 subListOfParticlePairs.size(),
-                // Action to perform at the end of each iteration
-                {
-                    actionToPerformAfterAllIntraParticleEvaluation.call(allParticles,deltaT)
-                    numberOfIterationsCounterLatch.countDown()
-                } as Runnable)
+                new Runnable() {
+                    // Action to perform at the end of each iteration
+                    @Override
+                    void run() {
+                        util.updateLocationAndVelocity(allParticles, deltaT)
+                        numberOfIterationsCounterLatch.countDown()
+                    }
+                }
+        )
 
+        subListOfParticlePairs.each{ List<Tuple2<Particle,Particle>> sublist ->
+/*
+            // This is very slow ???
+            executorService.execute( new Runnable() {
 
-        subListOfParticlePairs.eachWithIndex { List<Tuple2<Particle,Particle>> subList,idx ->
+                @Override
+                void run() {
+                    while (numberOfIterationsCounterLatch.count > 0) {
+                        sublist.each {
+                            util.calculateForceBetweenParticles(it)
+                        }
+                        barrier.await()
+                    }
+                }
+            })
+*/
+          // This goes very fast
             def calculateForceBetweenParticleWorker = {
-                while(numberOfIterationsCounterLatch.count >0) {
-                    subList.each {
-                        actionToPerformBetweenParticles.call(it)
+                while (numberOfIterationsCounterLatch.count > 0) {
+                    sublist.each {
+                        util.calculateForceBetweenParticles(it)
                     }
                     barrier.await()
                 }
             } as Runnable
             executorService.execute(calculateForceBetweenParticleWorker)
         }
-
         numberOfIterationsCounterLatch.await()
 
     }
